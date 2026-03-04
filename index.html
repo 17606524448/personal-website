@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的个人空间 | 创意交互体验</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #111; color: white; font-family: 'Helvetica Neue', Arial, sans-serif; }
+        #canvas-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        #overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+            text-align: center;
+            pointer-events: none; /* Let clicks pass through to canvas */
+            transition: opacity 0.5s ease;
+        }
+        .instruction {
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            opacity: 0.8;
+        }
+        #content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 3;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0,0,0,0.85);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1s ease;
+        }
+        #content.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        h1 { font-size: 3rem; margin-bottom: 1rem; }
+        p { font-size: 1.2rem; max-width: 600px; line-height: 1.6; text-align: center; }
+        .btn {
+            margin-top: 2rem;
+            padding: 10px 20px;
+            border: 1px solid white;
+            color: white;
+            text-decoration: none;
+            transition: background 0.3s, color 0.3s;
+            cursor: pointer;
+        }
+        .btn:hover { background: white; color: black; }
+        
+        /* Social Icons */
+        .social-icons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 2rem 0;
+        }
+        
+        .social-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1.5rem;
+            text-decoration: none;
+            transition: background 0.3s, transform 0.3s;
+        }
+        
+        .social-icon:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-5px);
+        }
+        
+        /* Loading bar for hold interaction */
+        #loader {
+            position: absolute;
+            bottom: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 2px;
+            background: rgba(255,255,255,0.2);
+            z-index: 2;
+            overflow: hidden;
+            display: none;
+        }
+        #loader-bar {
+            width: 0%;
+            height: 100%;
+            background: white;
+            transition: width 0.1s linear;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="canvas-container"></div>
+
+    <div id="overlay">
+        <div class="instruction">长按进入 (Click & Hold)</div>
+    </div>
+
+    <div id="loader">
+        <div id="loader-bar"></div>
+    </div>
+
+    <div id="content">
+        <h1>你好，我是阿丨和</h1>
+        <p>欢迎来到我的数字空间。这里展示了我的生活、思考和创意。</p>
+        <p>一个正在努力的AI跨界新人。</p>
+        
+        <!-- Social Icons -->
+        <div class="social-icons">
+            <a href="#" class="social-icon" onclick="showContact('微信：1760652448')"><i class="fab fa-weixin"></i></a>
+            <a href="#" class="social-icon" onclick="showContact('QQ：1679600534')"><i class="fab fa-qq"></i></a>
+            <a href="#" class="social-icon" onclick="showContact('邮箱：17606524448hsd@gmail.com')"><i class="fas fa-envelope"></i></a>
+        </div>
+        
+        <a href="#" class="btn" onclick="enterTimeline()">ENTER</a>
+    </div>
+
+    <!-- Timeline Section -->
+    <div id="timeline-section">
+        <div class="timeline-header">
+            <h2>地球Online开放游戏</h2>
+            <div class="progress-container">
+                <span class="progress-label">进度 26%</span>
+                <div class="progress-line">
+                    <div class="progress-dot"></div>
+                </div>
+            </div>
+        </div>
+        <div class="timeline-container">
+            <div class="timeline-axis"></div>
+            
+            <!-- Labels -->
+            <div class="axis-label top">主线</div>
+            <div class="axis-label bottom">支线</div>
+
+            <!-- Timeline Item 1 (Top) -->
+            <div class="timeline-item top" style="left: 15%" onclick="navigateTo(1)">
+                <div class="marker"></div>
+                <div class="desc">初入社会大学</div>
+                <div class="date">2021.07</div>
+            </div>
+
+            <!-- Timeline Item 2 (Bottom with Arrow) -->
+            <div class="timeline-item bottom" style="left: 35%" onclick="navigateTo(2)">
+                <div class="marker arrow"></div>
+                <div class="desc">探索可能</div>
+                <div class="date">2024.10</div>
+            </div>
+
+            <!-- Timeline Item 3 (Top) -->
+            <div class="timeline-item top" style="left: 55%" onclick="navigateTo(3)">
+                <div class="marker"></div>
+                <div class="desc">完成终身大事</div>
+                <div class="date">2025.01</div>
+            </div>
+
+            <!-- Timeline Item 4 (Bottom with Arrow) -->
+            <div class="timeline-item bottom" style="left: 75%" onclick="navigateTo(4)">
+                <div class="marker arrow"></div>
+                <div class="desc">跨界AI</div>
+                <div class="date">2026.02</div>
+            </div>
+            
+            <!-- Timeline Item 5 (Top - Future) -->
+            <div class="timeline-item top" style="left: 95%" onclick="navigateTo(5)">
+                <div class="marker"></div>
+                <div class="desc">未来</div>
+                <div class="date">∞</div>
+            </div>
+        </div>
+        <p class="timeline-motto">拥有随时再出发的能力和魄力</p>
+        <a href="#" class="btn-back" onclick="backToHome()">BACK</a>
+    </div>
+
+    <!-- Detail Pages Container -->
+    <div id="detail-page" class="detail-page">
+        <!-- Fixed Back Button for Detail Page -->
+        <a href="#" class="detail-fixed-back" onclick="closeDetail()">BACK</a>
+        
+        <div class="detail-content" id="detail-content-1">
+            <div class="detail-grid">
+                <!-- Sidebar: Profile & Stats -->
+                <aside class="detail-sidebar">
+                    <div class="profile-frame">
+                        <img src="./images/avatar.png" alt="阿丨和" class="profile-avatar">
+                        <div class="status-indicator">
+                            <span class="dot"></span> ONLINE
+                        </div>
+                    </div>
+                    <div class="stats-box">
+                        <div class="stat-item">
+                            <span class="label">EXP</span>
+                            <span class="value">4 YEARS</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="label">SKILL</span>
+                            <span class="value">DESIGN</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="label">LOC</span>
+                            <span class="value">EARTH</span>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Main Content -->
+                <main class="detail-main">
+                    <header class="detail-header">
+                        <h1 class="glitch-text" data-text="阿丨和">阿丨和</h1>
+                        <div class="tags-container">
+                            <span class="tech-tag">AI 跨界探索者</span>
+                            <span class="tech-tag">创意开发者</span>
+                            <span class="tech-tag">终身学习者</span>
+                        </div>
+                    </header>
+
+                    <section class="bio-section">
+                        <h3 class="section-label">01 // IDENTITY_DATA</h3>
+                        <!-- Removed intro text -->
+                        
+                        <div class="bio-data-grid">
+                            <div class="bio-item"><span class="bio-label">星座</span> <span class="bio-value">双鱼座</span></div>
+                            <div class="bio-item"><span class="bio-label">MBTI</span> <span class="bio-value">i人</span></div>
+                            <div class="bio-item"><span class="bio-label">爱好</span> <span class="bio-value">游戏</span></div>
+                            <div class="bio-item"><span class="bio-label">籍贯</span> <span class="bio-value">江西老表</span></div>
+                        </div>
+
+                        <p class="role-tag">RAIL TRANSIT ARCHITECT</p>
+                    </section>
+
+                    <section class="experience-section">
+                        <h3 class="section-label">02 // WORK_LOGS</h3>
+                        
+                        <div class="exp-item">
+                            <div class="exp-date">2021.07 - 2026.02</div>
+                            <div class="exp-content">
+                                <h4 class="exp-role">轨道交通建筑设计师 <span class="exp-company">@ 相关设计单位</span></h4>
+                                <ul class="exp-list">
+                                    <li>负责深圳地铁 14/16 号线大运枢纽站、深大城际大运站等核心项目，负责全阶段建筑设计与现场技术支撑，保障项目按期通车与验收。</li>
+                                    <li>独立完成多个城际铁路及地铁项目的预可研、可研、初设等阶段设计，为项目中标与落地提供核心专业支撑。</li>
+                                    <li>总结并复用设计经验，优化运营适配与施工落地性，高效处理运营问题，提升项目推进效率与质量。</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="exp-item">
+                            <div class="exp-date">2026.02 - NOW</div>
+                            <div class="exp-content">
+                                <h4 class="exp-role">AI 训练师 / 转型探索 <span class="exp-company">@ 个人转型与学习</span></h4>
+                                <ul class="exp-list">
+                                    <li>系统学习 AI 训练与生成式内容创作，探索 AI 与轨道交通设计的融合应用。</li>
+                                    <li>构建个人知识体系，分享设计与 AI 结合的实践心得，推动职业转型与能力升级。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="philosophy-section">
+                        <p class="bio-desc">在这个快速变化的时代，我始终保持着对新技术的好奇心。从最初的迷茫到逐渐找到方向，我一直在探索技术与创意的结合点。我相信，每一次尝试都是通往未来的基石。</p>
+                    </section>
+                    
+                    <!-- Detail Page Back Button -->
+                    <!-- <div style="text-align: center; margin-top: 50px;">
+                        <a href="#" class="btn-back-detail" onclick="closeDetail()">BACK</a>
+                    </div> -->
+                </main>
+            </div>
+        </div>
+            <!-- Detail Content 3: Wedding -->
+        <div class="detail-content" id="detail-content-3">
+            <header class="detail-header">
+                <h1 class="glitch-text" data-text="终身大事">终身大事</h1>
+                <div class="subtitle" style="color: #ff69b4; text-shadow: 0 0 10px #ff69b4;">LOVE & PARTNERSHIP</div>
+            </header>
+
+            <div class="wedding-gallery">
+                <div class="gallery-desc" style="text-align: center; max-width: 800px; margin-left: auto; margin-right: auto;">
+                    <p style="white-space: nowrap;">2025年1月，我完成了人生中最重要的里程碑，结束了我们长达10年的恋爱长跑。</p>
+                    <p style="white-space: nowrap;">不仅是身份的转变，更是责任的开始。我们在亲朋好友的见证下，许下了相伴一生的承诺。</p>
+                </div>
+
+                <div class="photo-grid">
+                    <!-- Placeholder for wedding photos -->
+                    <div class="photo-card">
+                        <img src="images/wedding-day.png" style="width: 100%; height: 100%; object-fit: cover;" alt="Wedding Day">
+                        <div class="photo-caption">Wedding Day</div>
+                    </div>
+                    <div class="photo-card">
+                        <img src="images/wedding.png" style="width: 100%; height: 100%; object-fit: cover;" alt="Beautiful Moments">
+                        <div class="photo-caption">Beautiful Moments</div>
+                    </div>
+                    <div class="photo-card">
+                        <img src="images/celebration.png" style="width: 100%; height: 100%; object-fit: cover;" alt="Celebration">
+                        <div class="photo-caption">Celebration</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detail Content 4: AI Crossover -->
+        <div class="detail-content" id="detail-content-4">
+            <header class="detail-header">
+                <h1 class="glitch-text" data-text="跨界 AI">跨界 AI</h1>
+                <div class="subtitle">FUTURE & INNOVATION</div>
+            </header>
+            
+            <div class="ai-vision">
+                <p class="vision-text" style="white-space: nowrap;">"我希望能用 AI 改变自己，也改变创造的方式。"</p>
+                <p class="vision-sub">从传统设计到智能生成，这是一场思维的重塑。</p>
+            </div>
+
+            <div class="ai-gallery">
+                <!-- AI Tool 1 -->
+                <a href="https://www.aig123.com/" target="_blank" class="ai-card">
+                    <div class="ai-img-placeholder">🤖</div>
+                    <div class="ai-desc">
+                        <div>
+                            <h3>AI 辅助设计</h3>
+                            <p>探索 AI 工具导航，发现 Stable Diffusion 与 Midjourney 等设计工具。</p>
+                        </div>
+                        <span class="ai-link-btn">GO</span>
+                    </div>
+                </a>
+                
+                <!-- AI Tool 2 -->
+                <a href="https://www.aicpb.com/" target="_blank" class="ai-card">
+                    <div class="ai-img-placeholder">🧠</div>
+                    <div class="ai-desc">
+                        <div>
+                            <h3>思维重塑</h3>
+                            <p>利用 AI 产品榜等平台构建个人知识库，优化学习与决策路径。</p>
+                        </div>
+                        <span class="ai-link-btn">GO</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+        <div class="detail-content" id="detail-content-2">
+            <header class="detail-header">
+                <h1 class="glitch-text" data-text="探索可能">探索可能</h1>
+                <div class="tags-container">
+                    <span class="tech-tag">自媒体运营</span>
+                    <span class="tech-tag">内容创作</span>
+                    <span class="tech-tag">电商实践</span>
+                </div>
+            </header>
+
+            <div class="social-grid">
+                <!-- Douyin -->
+                <div class="social-wrapper">
+                    <a href="https://v.douyin.com/MS4ujkS5_ow/" target="_blank" class="social-card douyin">
+                        <img src="images/douyin.svg" class="social-img-icon" alt="Douyin">
+                        <div class="social-info">
+                            <h3>发着玩</h3>
+                            <p>记录生活，分享创意短视频。</p>
+                            <span class="social-link">点击查看主页 &rarr;</span>
+                        </div>
+                    </a>
+                    <p class="social-note-bottom">点个关注</p>
+                </div>
+
+                <!-- Xiaohongshu -->
+                <div class="social-wrapper">
+                    <a href="https://xhslink.com/m/8VT2tJuG3WR" target="_blank" class="social-card xiaohongshu">
+                        <img src="images/xiaohongshu.svg" class="social-img-icon" alt="Xiaohongshu">
+                        <div class="social-info">
+                            <h3>打广告</h3>
+                            <p>生活方式与好物分享笔记。</p>
+                            <span class="social-link">点击查看笔记 &rarr;</span>
+                        </div>
+                    </a>
+                    <p class="social-note-bottom">交个朋友</p>
+                </div>
+
+                <!-- Xianyu -->
+                <div class="social-wrapper">
+                    <a href="https://m.tb.cn/h.iY5ZdFs?tk=rO4PUsvoKPY" target="_blank" class="social-card xianyu">
+                        <img src="images/xianyu.svg" class="social-img-icon" alt="Xianyu">
+                        <div class="social-info">
+                            <h3>互联网民工</h3>
+                            <p>个人闲置好物与独特收藏。</p>
+                            <span class="social-link">点击进店逛逛 &rarr;</span>
+                        </div>
+                    </a>
+                    <p class="social-note-bottom">有需要下单</p>
+                </div>
+            </div>
+
+            <section class="social-quote">
+                <p>不必沉默，不必隐藏，愿我们都能在数字世界里，坦荡地表达自我</p>
+            </section>
+        </div>
+
+        <!-- Detail Content 5: Future -->
+        <div class="detail-content" id="detail-content-5" style="max-width: 100%; padding: 0; position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
+            <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
+                <h1 style="font-size: 2rem; color: #fff; text-align: center; line-height: 1.6; text-shadow: 0 0 15px rgba(255, 255, 255, 0.5); margin: 0;">
+                    我也不知道未来啥样<br>一起加油
+                </h1>
+            </div>
+        </div>
+    </div>
+
+    <!-- Three.js from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Custom Script -->
+    <script src="js/main.js"></script>
+</body>
+</html>
